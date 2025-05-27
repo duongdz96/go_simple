@@ -66,5 +66,5 @@ func main() {
 	vulnerabilities.DemonstrateG501("my secret data")
 	log.Println("--------------------------------------")
 
-	log.Println("Hoàn thành demo. Hãy chạy 'gosec ./...' trong thư mục dự án.")
+	log.Println("Hoàn thành demo. Hãy chạy 'gosec ./...' trong thư mục dự án")
 }
