@@ -8,7 +8,7 @@ import (
 	"os"       // Cần cho G304
 
 	// Sử dụng đường dẫn module cho package vulnerabilities
-	"gosec-multifile-test/vulnerabilities"
+	vulnerabilities "go_simple/vuln"
 )
 
 // DummyResponseWriter để cung cấp cho hàm DemonstrateG203
@@ -37,7 +37,7 @@ func main() {
 	log.Println("--------------------------------------")
 
 	vulnerabilities.DemonstrateG107("http://malicious-example.com/data.txt") // SSRF
-	vulnerabilities.DemonstrateG107("file:///etc/hosts")                      // Local file access
+	vulnerabilities.DemonstrateG107("file:///etc/hosts")                     // Local file access
 	log.Println("--------------------------------------")
 
 	var dummyDB *sql.DB // Không cần DB thật, gosec quét mã tĩnh
@@ -57,7 +57,7 @@ func main() {
 	}
 	vulnerabilities.DemonstrateG304(tempFilePath)
 	vulnerabilities.DemonstrateG304("/etc/passwd") // Ví dụ đường dẫn nguy hiểm
-	os.Remove(tempFilePath)                       // Dọn dẹp
+	os.Remove(tempFilePath)                        // Dọn dẹp
 	log.Println("--------------------------------------")
 
 	vulnerabilities.DemonstrateG404()

@@ -1,0 +1,57 @@
+name: Go Security Scan (gosec)
+
+on:
+  push:
+    branches: [ "main", "master" ] # Thay thế bằng tên nhánh chính của bạn nếu khác
+  pull_request:
+    branches: [ "main", "master" ] # Thay thế bằng tên nhánh chính của bạn nếu khác
+  workflow_dispatch: # Cho phép chạy thủ công từ tab Actions trên GitHub
+
+# Quyền cần thiết cho workflow
+permissions:
+  contents: read          # Để actions/checkout có thể đọc mã nguồn
+  security-events: write  # Để github/codeql-action/upload-sarif có thể ghi sự kiện bảo mật (nếu bạn dùng SARIF)
+  actions: read           # Để truy cập các actions khác (ví dụ: codeql-action)
+
+jobs:
+  gosec_scan:
+    name: Run Gosec Scanning
+    runs-on: ubuntu-latest # Chạy trên Ubuntu mới nhất
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Action để checkout mã nguồn của bạn
+
+      - name: Set up Go
+        uses: actions/setup-go@v4 # Action để thiết lập môi trường Go
+        with:
+          go-version: '1.21' # Phiên bản Go khớp với file go.mod của bạn
+
+      - name: Run Gosec Security Scanner (Output to console)
+        uses: securego/gosec@master # Sử dụng action chính thức của gosec (luôn lấy bản mới nhất từ master)
+                                     # Hoặc bạn có thể dùng một phiên bản cụ thể, ví dụ: @v2.19.0
+        with:
+          args: './...' # Quét tất cả các package trong thư mục hiện tại và thư mục con
+        # Theo mặc định, nếu gosec tìm thấy vấn đề, nó sẽ thoát với mã lỗi khác 0,
+        # làm cho workflow thất bại. Đây thường là hành vi mong muốn.
+        # Bạn có thể thêm '-no-fail' vào args nếu muốn workflow luôn thành công.
+        # Ví dụ: args: '-no-fail ./...'
+
+      # TÙY CHỌN: Xuất kết quả ra định dạng SARIF và tải lên GitHub Code Scanning
+      # Bỏ comment các bước sau nếu bạn muốn tích hợp với GitHub Code Scanning.
+      # Đảm bảo bạn đã bật GitHub Advanced Security cho repo private,
+      # hoặc repo của bạn là public để Code Scanning hoạt động.
+
+      # - name: Run Gosec Security Scanner (SARIF output)
+      #   uses: securego/gosec@master
+      #   with:
+      #     args: '-fmt=sarif -out=gosec-results.sarif ./...'
+      #     # Để đảm bảo workflow tiếp tục đến bước upload ngay cả khi gosec tìm thấy lỗi:
+      #     # continue-on-error: true # Hoặc sử dụng '-no-fail' trong args ở trên
+
+      # - name: Upload Gosec SARIF to GitHub Security
+      #   # Chạy bước này ngay cả khi bước gosec trước đó thất bại (do tìm thấy vấn đề)
+      #   if: always()
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: gosec-results.sarif
+      #     category: gosec-scan # Đặt tên category cho các cảnh báo trên GitHub Security tab
